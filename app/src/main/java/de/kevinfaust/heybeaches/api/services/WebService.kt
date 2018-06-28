@@ -5,8 +5,7 @@ import de.kevinfaust.heybeaches.api.ApiRequest
 import de.kevinfaust.heybeaches.api.ApiResult
 import java.io.BufferedOutputStream
 import java.net.HttpURLConnection
-import java.net.HttpURLConnection.HTTP_BAD_REQUEST
-import java.net.HttpURLConnection.HTTP_OK
+import java.net.HttpURLConnection.*
 import java.net.URL
 
 object WebService : IWebService {
@@ -18,13 +17,16 @@ object WebService : IWebService {
         try {
             val connection = performRequest(request)
 
-            if (connection.responseCode == HTTP_OK) {
-                val responseSuccess = connection.inputStream.bufferedReader().readText()
-                result = ApiResult(responseSuccess, "")
-            } else if (connection.responseCode == HTTP_BAD_REQUEST) {
-                val responseError = connection.errorStream.bufferedReader().readText()
-                // TODO: Handle Error correctly
-                Log.e("WebService", "getRequest: ${connection.responseCode} with response $responseError")
+            when (connection.responseCode) {
+                HTTP_OK -> {
+                    val responseSuccess = connection.inputStream.bufferedReader().readText()
+                    result = ApiResult(responseSuccess, "")
+                }
+                HTTP_BAD_REQUEST -> {
+                    val responseError = connection.errorStream.bufferedReader().readText()
+                    // TODO: Handle Error correctly
+                    Log.e("WebService", "getRequest: ${connection.responseCode} with response $responseError")
+                }
             }
         } catch (e: Exception) {
             Log.e("WebService", "getRequest: An error occurred due to $e")
@@ -35,19 +37,21 @@ object WebService : IWebService {
 
     override fun postRequest(request: ApiRequest): ApiResult {
         var result: ApiResult? = null
-        var connection: HttpURLConnection? = null
 
         try {
-            connection = performRequest(request)
+            val connection = performRequest(request)
 
-            if (connection.responseCode == HTTP_OK) {
-                val responseSuccess = connection.inputStream.bufferedReader().readText()
-                val token = connection.getHeaderField("x-auth")
-                result = ApiResult(responseSuccess, token)
-           } else if (connection.responseCode == HTTP_BAD_REQUEST) {
-                val responseError = connection.errorStream.bufferedReader().readText()
-                // TODO: Handle Error correctly
-                Log.e("WebService", "postRequest: ${connection.responseCode} with response $responseError")
+            when (connection.responseCode) {
+                HTTP_OK -> {
+                    val responseSuccess = connection.inputStream.bufferedReader().readText()
+                    val token = connection.getHeaderField("x-auth")
+                    result = ApiResult(responseSuccess, token)
+                }
+                HTTP_BAD_REQUEST -> {
+                    val responseError = connection.errorStream.bufferedReader().readText()
+                    // TODO: Handle Error correctly
+                    Log.e("WebService", "postRequest: ${connection.responseCode} with response $responseError")
+                }
             }
         } catch (e: Exception) {
             Log.e("WebService", "postRequest: An error occurred due to $e")
@@ -61,12 +65,19 @@ object WebService : IWebService {
         try {
             val connection = performRequest(request)
 
-            if (connection.responseCode == HTTP_OK) {
-                Log.i("WebService", "deleteRequest: User was logged out")
-            } else if (connection.responseCode == HTTP_BAD_REQUEST) {
-                val responseError = connection.errorStream.bufferedReader().readText()
-                // TODO: Handle Error correctly
-                Log.e("WebService", "deleteRequest: ${connection.responseCode} with response $responseError")
+            when (connection.responseCode) {
+                HTTP_OK -> {
+                    Log.i("WebService", "deleteRequest: User was logged out")
+                }
+                HTTP_UNAUTHORIZED -> {
+                    // TODO: Handle Error correctly
+                    Log.e("WebService", "deleteRequest: ${connection.responseCode} Unauthorized. Wrong token.")
+                }
+                HTTP_BAD_REQUEST -> {
+                    val responseError = connection.errorStream.bufferedReader().readText()
+                    // TODO: Handle Error correctly
+                    Log.e("WebService", "deleteRequest: ${connection.responseCode} with response $responseError")
+                }
             }
         } catch (e: Exception) {
             Log.e("WebService", "deleteRequest: An error occurred due to $e")
