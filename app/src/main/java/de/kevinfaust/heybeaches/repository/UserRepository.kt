@@ -9,13 +9,15 @@ object UserRepository : IUserRepository {
     lateinit var apiClient: UserApiClient
     lateinit var persistenceService: PersistenceService
 
-    override fun signup(email: String, password: String) {
+    override fun signup(email: String, password: String): User? {
+        var user: User? = null
+
         try {
             // 1. Make webservice call
             val result = apiClient.signup(email, password)
 
             // 2. Create user object
-            val user = User(result?.email!!, result.token)
+            user = User(result?.email!!, result.token)
 
             // 3. Save credentials locally
             persistenceService.userName = user.email
@@ -24,15 +26,19 @@ object UserRepository : IUserRepository {
         } catch (e: Exception) {
             Log.e("USER_REPO", "signup: Signup failed due to $e")
         }
+
+        return user
     }
 
-    override fun login(email: String, password: String) {
+    override fun login(email: String, password: String): User? {
+        var user: User? = null
+
         try {
             // 1. Make webservice call
             val result = apiClient.login(email, password)
 
             // 2. Create user object
-            val user = User(result?.email!!, result.token)
+            user = User(result?.email!!, result.token)
 
             // 3. Save credentials locally
             persistenceService.userName = user.email
@@ -41,6 +47,8 @@ object UserRepository : IUserRepository {
         } catch (e: Exception) {
             Log.e("USER_REPO", "login: Login failed due to $e")
         }
+
+        return user
     }
 
     override fun logout(token: String) {
