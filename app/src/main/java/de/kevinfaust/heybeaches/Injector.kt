@@ -34,4 +34,9 @@ object Injector {
     private fun webService(): IWebService {
         return WebService
     }
+
+    fun inject(mainActivity: MainActivity) {
+        mainActivity.userRepository = Injector.userRepository(mainActivity.applicationContext)
+        mainActivity.persistenceService = Injector.persistenceService(mainActivity.applicationContext)
+    }
 }
