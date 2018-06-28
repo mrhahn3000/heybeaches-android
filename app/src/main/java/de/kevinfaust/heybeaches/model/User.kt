@@ -1,4 +1,3 @@
 package de.kevinfaust.heybeaches.model
 
-class User {
-}
+data class User(val email: String, val token: String)
