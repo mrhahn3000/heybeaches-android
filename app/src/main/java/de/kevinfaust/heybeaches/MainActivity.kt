@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
 
         Injector.inject(mainActivity = this)
 
-        val email = "user1@testmail.com"
+        val email = "user4@testmail.com"
         val password = "password1234"
 
         val registeredUser = userRepository.signup(email, password)

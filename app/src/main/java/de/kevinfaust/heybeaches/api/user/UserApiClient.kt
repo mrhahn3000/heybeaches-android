@@ -9,9 +9,9 @@ import java.util.concurrent.ExecutorService
 
 object UserApiClient : IApiClient {
 
-    private const val REGISTRATION_ENDPOINT = "users/register"
-    private const val LOGIN_ENDPOINT = "users/login"
-    private const val LOGOUT_ENDPOINT = "users/logout"
+    private const val REGISTRATION_ENDPOINT = "user/register"
+    private const val LOGIN_ENDPOINT = "user/login"
+    private const val LOGOUT_ENDPOINT = "user/logout"
 
     lateinit var webService: IWebService
     lateinit var executorService: ExecutorService
