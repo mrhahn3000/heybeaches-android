@@ -1,9 +1,13 @@
 package de.kevinfaust.heybeaches.api.services
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.util.Log
 import de.kevinfaust.heybeaches.api.ApiRequest
 import de.kevinfaust.heybeaches.api.ApiResult
 import java.io.BufferedOutputStream
+import java.io.ByteArrayOutputStream
 import java.net.HttpURLConnection
 import java.net.HttpURLConnection.*
 import java.net.URL
@@ -19,8 +23,19 @@ object WebService : IWebService {
 
             when (connection.responseCode) {
                 HTTP_OK -> {
-                    val responseSuccess = connection.inputStream.bufferedReader().readText()
-                    result = ApiResult(responseSuccess, "")
+                    result = if (connection.contentType == "image/png") {
+                        val bitmap = BitmapFactory.decodeStream(connection.inputStream)
+                        var responseSuccess = ""
+
+                        if (bitmap != null) {
+                            responseSuccess = handleImageResponse(bitmap)
+                        }
+
+                        ApiResult(responseSuccess, "")
+                    } else {
+                        val responseSuccess = connection.inputStream.bufferedReader().readText()
+                        ApiResult(responseSuccess, "")
+                    }
                 }
                 HTTP_BAD_REQUEST -> {
                     val responseError = connection.errorStream.bufferedReader().readText()
@@ -117,5 +132,11 @@ object WebService : IWebService {
         }
 
         return connection
+    }
+
+    private fun handleImageResponse(bitmap: Bitmap): String {
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        return Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
     }
 }

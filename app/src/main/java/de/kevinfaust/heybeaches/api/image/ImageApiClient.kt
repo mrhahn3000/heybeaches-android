@@ -1,5 +1,8 @@
 package de.kevinfaust.heybeaches.api.image
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import de.kevinfaust.heybeaches.api.ApiRequest
 import de.kevinfaust.heybeaches.api.ApiResult
 import de.kevinfaust.heybeaches.api.IApiClient
@@ -28,6 +31,24 @@ object ImageApiClient : IApiClient {
 
 
         if (response != null) {
+            result = parseImagesResponse(response as ApiResult)
+        }
+
+        return result
+    }
+
+    fun getBeachImage(imageUrl: String, token: String): Bitmap? {
+        val request = prepareGetRequest(imageUrl, token)
+
+        var response: ApiResult? = null
+        var result: Bitmap? = null
+
+        executorService.submit {
+            response = webService.getRequest(request)
+        }.get()
+
+
+        if (response != null) {
             result = parseImageResponse(response as ApiResult)
         }
 
@@ -46,7 +67,7 @@ object ImageApiClient : IApiClient {
     //   },
     //   ...
     // ]
-    private fun parseImageResponse(response: ApiResult): ImageApiResult {
+    private fun parseImagesResponse(response: ApiResult): ImageApiResult {
         val jsonArray = JSONArray(response.response)
         val responseData = ArrayList<Image>()
 
@@ -64,6 +85,12 @@ object ImageApiClient : IApiClient {
 
         return ImageApiResult(responseData)
     }
+
+    private fun parseImageResponse(response: ApiResult): Bitmap {
+        val bytes = Base64.decode(response.response, Base64.DEFAULT)
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    }
+
 
     override fun prepareGetRequest(path: String, token: String): ApiRequest {
         val method = "GET"
